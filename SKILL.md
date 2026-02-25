@@ -102,6 +102,56 @@ All data is stored at `~/.openclaw/cost-tracker/calls.jsonl`. Each line is a JSO
 
 The file auto-rotates at 50MB. No database, no external services, no extra processes.
 
+## Model optimization guide
+
+Not all crons need Sonnet. Some tasks are simple enough for Haiku (12x cheaper). But switching blindly breaks quality — test incrementally and monitor.
+
+### Safe for Haiku (tested, quality OK)
+
+| Cron | Why Haiku works |
+|------|----------------|
+| Jobs Monitor | Simple listing/filtering, no analysis needed |
+| Reddit Monitor | Summarize posts, no deep reasoning |
+| Greek Morning Flashcards | Generate vocab cards from a fixed pattern |
+
+### Keep on Sonnet (tested, Haiku degrades quality)
+
+| Cron | Why Sonnet needed |
+|------|-------------------|
+| *(add entries as you test)* | |
+
+### Not yet tested
+
+| Cron | Risk level |
+|------|-----------|
+| Gmail Digest | Low — mostly summarization |
+| Product Hunt | Low — list + brief commentary |
+| Moltbook Monitor | Medium — needs to pick relevant posts |
+| r/SEO Daily Digest | Medium — analytical |
+| Greek Lesson Evening | High — interactive teaching |
+| Nightly Reflection | High — analytical reasoning |
+| Weekly SEO Deep Dive | High — deep analysis |
+
+### How to switch a cron's model
+
+Edit `sessions.json` inside the container and change the `model` field for the target session:
+
+```bash
+docker exec openclaw node -e "
+const fs = require('fs');
+const p = '/home/openclaw/.openclaw/agents/main/sessions/sessions.json';
+const d = JSON.parse(fs.readFileSync(p, 'utf-8'));
+const sessions = d.sessions || d;
+for (const [k, v] of Object.entries(sessions)) {
+  if ((v.label || '').includes('TARGET_CRON_NAME')) {
+    v.model = 'claude-haiku-4-5-20251001';  // or claude-sonnet-4-5-20250929
+  }
+}
+fs.writeFileSync(p, JSON.stringify(d));
+"
+docker restart openclaw
+```
+
 ## Pricing reference
 
 | Model | Input | Output | Cache Write | Cache Read |
