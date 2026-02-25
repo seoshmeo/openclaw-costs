@@ -17,6 +17,22 @@ This tool intercepts all Anthropic API calls, logs token counts, and generates a
 
 ## Install
 
+### Option 1: As OpenClaw Skill (recommended)
+
+Copy this repo into your OpenClaw skills directory:
+
+```bash
+git clone https://github.com/seoshmeo/openclaw-costs.git ~/.openclaw/workspace/skills/cost-tracker
+```
+
+Then tell your OpenClaw agent:
+
+> Install the cost-tracker skill
+
+The agent will read `SKILL.md` and follow the installation instructions automatically.
+
+### Option 2: Manual
+
 ```bash
 git clone https://github.com/seoshmeo/openclaw-costs.git
 cd openclaw-costs
@@ -108,6 +124,19 @@ Total: 847 calls, ~$42.30 estimated
 5. **cost-report.mjs** reads the JSONL and generates analytics
 
 No external services. No extra processes. No dependencies. Just two JS files.
+
+## Project structure
+
+```
+openclaw-costs/
+├── SKILL.md              OpenClaw skill definition (for agent-based install)
+├── install.sh            Manual installation script
+├── scripts/
+│   ├── cost-hook.mjs     Fetch hook — intercepts Anthropic API calls
+│   └── cost-report.mjs   CLI analytics + Telegram report generator
+├── README.md
+└── LICENSE
+```
 
 ## Cost estimates
 
