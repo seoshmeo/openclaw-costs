@@ -91,6 +91,15 @@ The report includes:
 - **Wrong model for the job** — Sonnet used for simple monitoring/digest tasks where Haiku costs 10x less
 - **Expensive single calls** — individual calls over $0.50 (usually compaction or oversized context)
 - **Cost distribution** — which crons and sessions consume the most budget
+- **Duplicate crons** — two crons with the same schedule doing the same job (double the cost for no reason)
+
+## Duplicate cron detection
+
+Before optimizing models, check for duplicate crons. Duplicates happen when crons get recreated (e.g. renamed) without deleting the old one.
+
+To detect duplicates, read `~/.openclaw/cron/jobs.json` and look for jobs with identical or near-identical schedules and similar names. If found, keep the newer one and remove the older duplicate.
+
+Example: two Product Hunt crons both scheduled at `0 20 * * * UTC` — one named "вечерний дайджест", another "Evening". Same task, double cost.
 
 ## Data storage
 
@@ -110,27 +119,17 @@ Not all crons need Sonnet. Some tasks are simple enough for Haiku (12x cheaper).
 
 | Cron | Why Haiku works |
 |------|----------------|
-| Jobs Monitor | Simple listing/filtering, no analysis needed |
-| Reddit Monitor | Summarize posts, no deep reasoning |
-| Greek Morning Flashcards | Generate vocab cards from a fixed pattern |
+| *(add entries after testing — switch one cron, monitor quality for 2-3 days, then decide)* | |
 
-### Keep on Sonnet (tested, Haiku degrades quality)
+### Keep on Sonnet (needs quality)
 
 | Cron | Why Sonnet needed |
 |------|-------------------|
-| *(add entries as you test)* | |
+| *(add entries when Haiku degrades quality for a specific cron)* | |
 
-### Not yet tested
+### Approach
 
-| Cron | Risk level |
-|------|-----------|
-| Gmail Digest | Low — mostly summarization |
-| Product Hunt | Low — list + brief commentary |
-| Moltbook Monitor | Medium — needs to pick relevant posts |
-| r/SEO Daily Digest | Medium — analytical |
-| Greek Lesson Evening | High — interactive teaching |
-| Nightly Reflection | High — analytical reasoning |
-| Weekly SEO Deep Dive | High — deep analysis |
+Switch one cron at a time. Wait 2-3 days. Check Telegram output quality. If it got dumber — switch back and add to "Keep on Sonnet". If quality is fine — add to "Safe for Haiku" and try the next one.
 
 ### How to switch a cron's model
 
